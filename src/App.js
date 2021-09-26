@@ -25,11 +25,16 @@ const btns = [
 
 function App() {
   const [formula, setFormula] = useState("");
-  const [output, setOutput] = useState("");
-  const [lastType, setLastType] = useState(null);
+  const [output, setOutput] = useState(0);
+  const [lastType, setLastType] = useState("initialized");
   const [result, setResult] = useState(false);
 
   const handleNumber = (e) => {
+    let number = e.target.value;
+    if (number === "." && output.toString().includes(".")) {
+      return;
+    }
+
     if (lastType !== "number") {
       setOutput("");
     }
@@ -38,17 +43,26 @@ function App() {
       setOutput("");
       setFormula("");
     }
-    setOutput((output) => output + e.target.value);
-    setFormula((formula) => formula + e.target.value);
-    setLastType("number");
+    if (output === "0" && number === "0") {
+      return;
+    } else if (output === "0" && number !== "0" && number !== ".") {
+      setOutput(number);
+      setFormula((formula) => formula.slice(0, -1) + number);
+    } else {
+      setOutput((output) => output + number);
+      setFormula((formula) => formula + number);
+      setLastType("number");
+    }
   };
 
   const handleOperator = (e) => {
     let operator = e.target.value;
 
     if (operator === "AC") {
-      setOutput("");
+      // clear
+      setOutput(0);
       setFormula("");
+      setLastType("initialized");
     } else if (operator === "=") {
       // evaluate
       let evaluation;
@@ -83,7 +97,9 @@ function App() {
   return (
     <div className="Calculator">
       <div className="formulaScreen">{formula}</div>
-      <div className="outputField">{output}</div>
+      <div className="outputField" id="display">
+        {output}
+      </div>
       <div className="btns">
         {btns.map((e) => (
           <Button
@@ -100,7 +116,3 @@ function App() {
 }
 
 export default App;
-
-// keypoints
-// need to make last operator state
-//
