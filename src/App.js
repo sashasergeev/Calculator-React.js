@@ -7,17 +7,17 @@ const btns = [
   { id: "clear", type: "AC", value: "AC" },
   { id: "divide", type: "divide", value: "/" },
   { id: "multiply", type: "x", value: "x" },
-  { id: "7", type: "number", value: "7" },
-  { id: "8", type: "number", value: "8" },
-  { id: "9", type: "number", value: "9" },
+  { id: "seven", type: "number", value: "7" },
+  { id: "eight", type: "number", value: "8" },
+  { id: "nine", type: "number", value: "9" },
   { id: "subtract", type: "subtract", value: "-" },
-  { id: "4", type: "number", value: "4" },
-  { id: "5", type: "number", value: "5" },
-  { id: "6", type: "number", value: "6" },
+  { id: "four", type: "number", value: "4" },
+  { id: "five", type: "number", value: "5" },
+  { id: "six", type: "number", value: "6" },
   { id: "add", type: "add", value: "+" },
-  { id: "1", type: "number", value: "1" },
-  { id: "2", type: "number", value: "2" },
-  { id: "3", type: "number", value: "3" },
+  { id: "one", type: "number", value: "1" },
+  { id: "two", type: "number", value: "2" },
+  { id: "three", type: "number", value: "3" },
   { id: "zero", type: "number", value: "0" },
   { id: "decimal", type: "number", value: "." },
   { id: "equals", type: "equals", value: "=" },
@@ -28,8 +28,10 @@ function App() {
   const [output, setOutput] = useState(0);
   const [lastType, setLastType] = useState("initialized");
   const [result, setResult] = useState(false);
+  const [negative, setNegative] = useState(false);
 
   const handleNumber = (e) => {
+    setNegative(false);
     let number = e.target.value;
     if (number === "." && output.toString().includes(".")) {
       return;
@@ -57,7 +59,28 @@ function App() {
 
   const handleOperator = (e) => {
     let operator = e.target.value;
+    if (operator === "x") {
+      operator = "*";
+    }
 
+    // handle negative numbers
+    if (lastType === "operator" && operator === "-") {
+      setOutput(operator);
+      setFormula((formula) => formula + operator);
+      setLastType("negative");
+      return;
+    } else if (
+      lastType === "negative" &&
+      operator !== "AC" &&
+      operator !== "="
+    ) {
+      setOutput(operator);
+      setFormula(formula.slice(0, -2) + operator);
+      setLastType("operator");
+      return;
+    }
+
+    // handle basic operators (/ * - + AC EQUALS)
     if (operator === "AC") {
       // clear
       setOutput(0);
@@ -66,6 +89,11 @@ function App() {
     } else if (operator === "=") {
       // evaluate
       let evaluation;
+
+      if (formula === "") {
+        return;
+      }
+
       if (lastType === "operator") {
         evaluation = evaluate(formula.slice(0, -1));
         setFormula(`${formula.slice(0, -1)} = ${evaluation}`);
@@ -78,9 +106,6 @@ function App() {
       setLastType("Evaluated");
     } else {
       // case for (/, *, -, +)
-      if (operator === "x") {
-        operator = "*";
-      }
       if (lastType === "operator") {
         setFormula(formula.slice(0, -1));
       }
